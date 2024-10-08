@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     THB: {
-      address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+      address: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
       abi: [
         {
           inputs: [
@@ -238,6 +238,32 @@ const deployedContracts = {
         },
         {
           inputs: [],
+          name: "faucet",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          name: "lastAccessTime",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
           name: "name",
           outputs: [
             {
@@ -330,19 +356,21 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {
-        allowance: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        approve: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        balanceOf: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        decimals: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        name: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        symbol: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        totalSupply: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        transfer: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        transferFrom: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        allowance: "contracts/base/FaucetBase.sol",
+        approve: "contracts/base/FaucetBase.sol",
+        balanceOf: "contracts/base/FaucetBase.sol",
+        decimals: "contracts/base/FaucetBase.sol",
+        faucet: "contracts/base/FaucetBase.sol",
+        lastAccessTime: "contracts/base/FaucetBase.sol",
+        name: "contracts/base/FaucetBase.sol",
+        symbol: "contracts/base/FaucetBase.sol",
+        totalSupply: "contracts/base/FaucetBase.sol",
+        transfer: "contracts/base/FaucetBase.sol",
+        transferFrom: "contracts/base/FaucetBase.sol",
       },
     },
     TVER: {
-      address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+      address: "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
       abi: [
         {
           inputs: [
@@ -573,6 +601,32 @@ const deployedContracts = {
         },
         {
           inputs: [],
+          name: "faucet",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          name: "lastAccessTime",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
           name: "name",
           outputs: [
             {
@@ -665,15 +719,17 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {
-        allowance: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        approve: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        balanceOf: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        decimals: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        name: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        symbol: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        totalSupply: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        transfer: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        transferFrom: "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        allowance: "contracts/base/FaucetBase.sol",
+        approve: "contracts/base/FaucetBase.sol",
+        balanceOf: "contracts/base/FaucetBase.sol",
+        decimals: "contracts/base/FaucetBase.sol",
+        faucet: "contracts/base/FaucetBase.sol",
+        lastAccessTime: "contracts/base/FaucetBase.sol",
+        name: "contracts/base/FaucetBase.sol",
+        symbol: "contracts/base/FaucetBase.sol",
+        totalSupply: "contracts/base/FaucetBase.sol",
+        transfer: "contracts/base/FaucetBase.sol",
+        transferFrom: "contracts/base/FaucetBase.sol",
       },
     },
     YourContract: {

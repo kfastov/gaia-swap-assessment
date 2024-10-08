@@ -1,8 +1,8 @@
-// Import the OpenZeppelin ERC20 contract
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+// Import the FaucetBase contract
+import "./base/FaucetBase.sol";
 
-// Define the THB contract
-contract THB is ERC20 {
+// Define the THB contract that inherits from FaucetBase
+contract THB is FaucetBase {
     // Constructor to initialize the token with a name, symbol, and initial supply
     constructor(uint256 initialSupply) ERC20("Thai Baht", "THB") {
         // Mint the initial supply to the contract deployer

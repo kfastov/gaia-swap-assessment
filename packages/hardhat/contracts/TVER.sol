@@ -1,8 +1,8 @@
-// Import the OpenZeppelin ERC20 contract
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+// Import the FaucetBase contract
+import "./base/FaucetBase.sol";
 
 // Define the TVER contract
-contract TVER is ERC20 {
+contract TVER is FaucetBase {
     // Constructor to initialize the token with a name, symbol, and initial supply
     constructor(uint256 initialSupply) ERC20("Tokenized Carbon Credit", "TVER") {
         // Mint the initial supply to the contract deployer
