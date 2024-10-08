@@ -32,9 +32,33 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
     autoMine: true,
   });
 
+  // Deploy the THB token contract
+  await deploy("THB", {
+    from: deployer,
+    args: [hre.ethers.parseUnits("1000000", 18)], // Example initial supply
+    log: true,
+    autoMine: true,
+  });
+
+  // Deploy the TVER token contract
+  await deploy("TVER", {
+    from: deployer,
+    args: [hre.ethers.parseUnits("500000", 18)], // Example initial supply
+    log: true,
+    autoMine: true,
+  });
+
   // Get the deployed contract to interact with it after deploying.
   const yourContract = await hre.ethers.getContract<Contract>("YourContract", deployer);
   console.log("👋 Initial greeting:", await yourContract.greeting());
+
+  // Get the deployed THB contract to interact with it after deploying.
+  const thbContract = await hre.ethers.getContract<Contract>("THB", deployer);
+  console.log("THB Contract Address:", await thbContract.getAddress());
+
+  // Get the deployed TVER contract to interact with it after deploying.
+  const tverContract = await hre.ethers.getContract<Contract>("TVER", deployer);
+  console.log("TVER Contract Address:", await tverContract.getAddress());
 };
 
 export default deployYourContract;
