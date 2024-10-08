@@ -59,6 +59,23 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   // Get the deployed TVER contract to interact with it after deploying.
   const tverContract = await hre.ethers.getContract<Contract>("TVER", deployer);
   console.log("TVER Contract Address:", await tverContract.getAddress());
+
+  // Deploy the MiniSwap contract for TVER and THB
+  await deploy("MiniSwap", {
+    from: deployer,
+    args: [
+      "MiniSwap", // Token name
+      "MSWP", // Token symbol
+      await tverContract.getAddress(),
+      await thbContract.getAddress(),
+    ],
+    log: true,
+    autoMine: true,
+  });
+
+  // Get the deployed MiniSwap contract to interact with it after deploying.
+  const miniSwapContract = await hre.ethers.getContract<Contract>("MiniSwap", deployer);
+  console.log("MiniSwap Contract Address:", await miniSwapContract.getAddress());
 };
 
 export default deployYourContract;
