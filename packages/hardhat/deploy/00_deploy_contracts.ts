@@ -52,8 +52,8 @@ const deploySwapContracts: DeployFunction = async function (hre: HardhatRuntimeE
     args: [
       "MiniSwap", // Token name
       "MSWP", // Token symbol
-      await tverContract.getAddress(),
       await thbContract.getAddress(),
+      await tverContract.getAddress(),
     ],
     log: true,
     autoMine: true,

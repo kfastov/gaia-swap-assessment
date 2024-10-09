@@ -4,6 +4,7 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
+
 contract MiniSwap is ERC20 {
     address public immutable token0;
     address public immutable token1;
@@ -46,9 +47,6 @@ contract MiniSwap is ERC20 {
     function removeLiquidity(uint256 liquidity) external {
         require(liquidity > 0, "Liquidity must be greater than zero");
 
-        // Burn the LP token from the caller
-        _burn(msg.sender, liquidity);
-
         // Calculate the amount of token0 and token1
         uint256 totalSupply = totalSupply();
         uint256 amount0 = (reserve0 * liquidity) / totalSupply;
@@ -61,6 +59,9 @@ contract MiniSwap is ERC20 {
         // Update reserves
         reserve0 -= amount0;
         reserve1 -= amount1;
+
+        // Burn the LP token from the caller
+        _burn(msg.sender, liquidity);
 
         // Emit an event for removing liquidity
         emit LiquidityRemoved(msg.sender, amount0, amount1);
