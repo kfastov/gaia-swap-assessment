@@ -1,3 +1,4 @@
+
 // SPDX-License-Identifier: MIT
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -21,7 +22,7 @@ contract MiniSwap is ERC20 {
         token1 = _token1;
     }
 
-    function add_liquidity(uint256 amount0, uint256 amount1) external {
+    function addLiquidity(uint256 amount0, uint256 amount1) external {
         require(amount0 > 0 && amount1 > 0, "Amounts must be greater than zero");
 
         // Transfer token0 from the caller to the contract
@@ -40,6 +41,29 @@ contract MiniSwap is ERC20 {
 
         // Emit an event for adding liquidity
         emit LiquidityAdded(msg.sender, amount0, amount1);
+    }
+
+    function removeLiquidity(uint256 liquidity) external {
+        require(liquidity > 0, "Liquidity must be greater than zero");
+
+        // Burn the LP token from the caller
+        _burn(msg.sender, liquidity);
+
+        // Calculate the amount of token0 and token1
+        uint256 totalSupply = totalSupply();
+        uint256 amount0 = (reserve0 * liquidity) / totalSupply;
+        uint256 amount1 = (reserve1 * liquidity) / totalSupply;
+
+        // Transfer the corresponding amount of token0 and token1 back to the caller
+        IERC20(token0).transfer(msg.sender, amount0);
+        IERC20(token1).transfer(msg.sender, amount1);
+
+        // Update reserves
+        reserve0 -= amount0;
+        reserve1 -= amount1;
+
+        // Emit an event for removing liquidity
+        emit LiquidityRemoved(msg.sender, amount0, amount1);
     }
 
     function swap(uint256 amountIn, address tokenIn) external {
@@ -75,5 +99,6 @@ contract MiniSwap is ERC20 {
 
     // Define the event
     event LiquidityAdded(address indexed provider, uint256 amount0, uint256 amount1);
+    event LiquidityRemoved(address indexed provider, uint256 amount0, uint256 amount1);
     event Swap(address indexed swapper, address indexed tokenIn, address indexed tokenOut, uint256 amountIn, uint256 amountOut);
 }
