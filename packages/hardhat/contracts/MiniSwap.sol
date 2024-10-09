@@ -2,6 +2,7 @@
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 contract MiniSwap is ERC20 {
     address public immutable token0;
     address public immutable token1;
@@ -33,8 +34,9 @@ contract MiniSwap is ERC20 {
         reserve0 += amount0;
         reserve1 += amount1;
 
-        // Mint the LP token to the caller
-        _mint(msg.sender, amount0 * amount1);
+        // Mint the LP token to the caller using the square root of the product
+        uint256 liquidity = Math.sqrt(amount0 * amount1);
+        _mint(msg.sender, liquidity);
 
         // Emit an event for adding liquidity
         emit LiquidityAdded(msg.sender, amount0, amount1);
