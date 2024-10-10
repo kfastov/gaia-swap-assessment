@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { parseEther } from "viem";
 import { useAccount } from "wagmi";
-import { useScaffoldContract } from "~~/hooks/scaffold-eth";
-import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { useScaffoldContract, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 // Define the type for the token
 type Token = {
@@ -24,6 +23,19 @@ const SwapForm: React.FC = () => {
   const { data: thbContract, isLoading: thbContractLoading } = useScaffoldContract({ contractName: "THB" });
   const { data: tverContract, isLoading: tverContractLoading } = useScaffoldContract({ contractName: "TVER" });
 
+  // Load reserves for price calculation
+  const { data: reserve0, isLoading: reserve0Loading } = useScaffoldReadContract({
+    contractName: "MiniSwap",
+    functionName: "reserve0",
+    // watch: true,
+  });
+
+  const { data: reserve1, isLoading: reserve1Loading } = useScaffoldReadContract({
+    contractName: "MiniSwap",
+    functionName: "reserve1",
+    // watch: true,
+  });
+
   const { writeContractAsync } = useScaffoldWriteContract("MiniSwap");
 
   useEffect(() => {
@@ -34,12 +46,13 @@ const SwapForm: React.FC = () => {
     if (!tverContractLoading && tverContract) {
       newTokens.push({ name: "TVER", address: tverContract.address });
     }
-    if (newTokens.length > 0) {
+    // Check if tokens have changed
+    const tokensChanged = JSON.stringify(tokens) !== JSON.stringify(newTokens);
+
+    if (tokensChanged) {
       setTokens(newTokens);
-      setFromToken(newTokens[0]);
-      if (newTokens.length > 1) {
-        setToToken(newTokens[1]);
-      }
+      setFromToken(newTokens[0] || null);
+      setToToken(newTokens[1] || null);
     }
   }, [thbContractLoading, thbContract, tverContractLoading, tverContract]);
 
@@ -65,9 +78,6 @@ const SwapForm: React.FC = () => {
       console.error(error);
     }
   };
-
-  console.log("Option 1: ", thbContractLoading ? "Loading..." : thbContract?.address ?? "Not found");
-  console.log("Option 2: ", tverContractLoading ? "Loading..." : tverContract?.address ?? "Not found");
 
   const { openConnectModal } = useConnectModal();
   const { isConnected } = useAccount();
@@ -172,6 +182,12 @@ const SwapForm: React.FC = () => {
           <button className="btn btn-primary w-full" onClick={isConnected ? swapHandler : openConnectModal}>
             {isConnected ? "Swap" : "Connect"}
           </button>
+        </div>
+      </div>
+      <div className="p-6">
+        <div className="flex justify-between text-sm text-gray-500">
+          <span>Reserve 0: {reserve0Loading ? "Loading..." : reserve0}</span>
+          <span>Reserve 1: {reserve1Loading ? "Loading..." : reserve1}</span>
         </div>
       </div>
     </div>
