@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import SwapForm from "./SwapForm";
 import type { NextPage } from "next";
 
@@ -10,7 +9,6 @@ const Home: NextPage = () => {
       <div className="flex items-center flex-col flex-grow pt-10">
         <div className="px-5">
           <h1 className="text-3xl font-bold text-center mb-4">MiniSwap</h1>
-          <Link href="/deposit">Add Liquidity</Link>
         </div>
 
         <div className="flex-grow bg-base-300 w-full mt-8 px-8 py-12">
