@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { parseEther } from "viem";
+import { formatUnits, parseUnits } from "viem";
 import { useAccount } from "wagmi";
 import { useScaffoldContract, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
@@ -14,8 +14,8 @@ const SwapForm: React.FC = () => {
   const { openConnectModal } = useConnectModal();
   const { address, isConnected } = useAccount();
 
-  const [fromValue, setFromValue] = useState<number>(0.001);
-  const [toValue, setToValue] = useState<number>(0);
+  const [fromValue, setFromValue] = useState<string>("0.001");
+  const [toValue, setToValue] = useState<string>("0");
 
   // Initialize the state with the correct type
   const [tokens, setTokens] = useState<Token[]>([]);
@@ -54,6 +54,18 @@ const SwapForm: React.FC = () => {
     watch: true,
   });
 
+  // Load decimals for token conversion
+  const { data: thbDecimals, isLoading: thbDecimalsLoading } = useScaffoldReadContract({
+    contractName: "THB",
+    functionName: "decimals",
+    watch: true,
+  });
+  const { data: tverDecimals, isLoading: tverDecimalsLoading } = useScaffoldReadContract({
+    contractName: "TVER",
+    functionName: "decimals",
+    watch: true,
+  });
+
   const { writeContractAsync: writeMiniSwapAsync } = useScaffoldWriteContract("MiniSwap");
   const { writeContractAsync: writeTHBAsync } = useScaffoldWriteContract("THB");
   const { writeContractAsync: writeTVERAsync } = useScaffoldWriteContract("TVER");
@@ -77,25 +89,31 @@ const SwapForm: React.FC = () => {
   }, [thbContractLoading, thbContract, tverContractLoading, tverContract]);
 
   const swapSufficient = () => {
+    if (thbDecimalsLoading || tverDecimalsLoading || !thbDecimals || !tverDecimals) {
+      return false;
+    }
     if (fromToken?.name === "THB") {
-      return allowanceTHB && allowanceTHB >= parseEther(fromValue.toString());
+      return allowanceTHB && allowanceTHB >= parseUnits(fromValue, thbDecimals);
     } else if (fromToken?.name === "TVER") {
-      return allowanceTVER && allowanceTVER >= parseEther(fromValue.toString());
+      return allowanceTVER && allowanceTVER >= parseUnits(fromValue, tverDecimals);
     }
     return false;
   };
 
   const approveHandler = async () => {
     console.log("Approve");
+    if (thbDecimalsLoading || tverDecimalsLoading || !thbDecimals || !tverDecimals) {
+      return;
+    }
     if (fromToken?.name === "THB") {
       await writeTHBAsync({
         functionName: "approve",
-        args: [miniSwapContract?.address, parseEther(fromValue.toString())],
+        args: [miniSwapContract?.address, parseUnits(fromValue, thbDecimals)],
       });
     } else if (fromToken?.name === "TVER") {
       await writeTVERAsync({
         functionName: "approve",
-        args: [miniSwapContract?.address, parseEther(fromValue.toString())],
+        args: [miniSwapContract?.address, parseUnits(fromValue, tverDecimals)],
       });
     }
   };
@@ -110,12 +128,15 @@ const SwapForm: React.FC = () => {
       console.error("No tokens selected");
       return;
     }
+    if (thbDecimalsLoading || tverDecimalsLoading || !thbDecimals || !tverDecimals) {
+      return;
+    }
     try {
-      console.log(`Trying to swap ${parseEther(fromValue.toString())} ${fromToken.name} to ${toToken.name}`);
+      console.log(`Trying to swap ${parseUnits(fromValue, thbDecimals)} ${fromToken.name} to ${toToken.name}`);
       await writeMiniSwapAsync(
         {
           functionName: "swap",
-          args: [parseEther(fromValue.toString()), fromToken.address],
+          args: [parseUnits(fromValue, thbDecimals), fromToken.address],
         },
         {
           onBlockConfirmation: txnReceipt => {
@@ -128,12 +149,17 @@ const SwapForm: React.FC = () => {
     }
   };
 
-  const calculateToValue = (fromValue: number, price: number) => {
-    return fromValue * price;
+  const calculateOutputAmount = (amountIn: bigint, tokenIn?: string) => {
+    if (reserve0Loading || reserve1Loading || !reserve0 || !reserve1 || !tverDecimals || !thbDecimals) {
+      return 0;
+    }
+    if (tokenIn === "THB") {
+      return formatUnits((reserve1 * amountIn) / (reserve0 + amountIn), tverDecimals);
+    } else if (tokenIn === "TVER") {
+      return formatUnits((reserve0 * amountIn) / (reserve1 + amountIn), thbDecimals);
+    }
+    return 0;
   };
-
-  // Placeholder price for conversion
-  const placeholderPrice = 1.5;
 
   return (
     <div className="w-96 mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
@@ -146,9 +172,12 @@ const SwapForm: React.FC = () => {
               className="input input-bordered w-24 text-xl font-bold text-black bg-gray-100"
               value={fromValue}
               onChange={e => {
-                const newFromValue = parseFloat(e.target.value);
-                setFromValue(newFromValue);
-                setToValue(calculateToValue(newFromValue, placeholderPrice));
+                const value = e.target.value;
+                // Allow only numbers and a single decimal point
+                if (/^\d*\.?\d*$/.test(value)) {
+                  setFromValue(value);
+                  setToValue(calculateOutputAmount(parseUnits(value, thbDecimals ?? 0), fromToken?.name).toString());
+                }
               }}
             />
             <select
@@ -235,8 +264,10 @@ const SwapForm: React.FC = () => {
       </div>
       <div className="p-6">
         <div className="flex justify-between text-sm text-gray-500">
-          <span>Reserve 0: {reserve0Loading ? "Loading..." : reserve0?.toString()}</span>
-          <span>Reserve 1: {reserve1Loading ? "Loading..." : reserve1?.toString()}</span>
+          <span className="mr-4">
+            Reserve 0: {reserve0Loading ? "Loading..." : formatUnits(reserve0 ?? 0n, thbDecimals ?? 0)}
+          </span>
+          <span>Reserve 1: {reserve1Loading ? "Loading..." : formatUnits(reserve1 ?? 0n, tverDecimals ?? 0)}</span>
         </div>
         <div className="flex justify-between text-sm text-gray-500">
           <span>Allowance THB: {allowanceTHBLoading ? "Loading..." : allowanceTHB?.toString()}</span>
