@@ -27,6 +27,10 @@ export const menuLinks: HeaderMenuLink[] = [
     label: "Withdraw",
     href: "/withdraw",
   },
+  {
+    label: "Transactions",
+    href: "/transactions",
+  },
 ];
 
 export const HeaderMenuLinks = () => {
