@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { formatUnits, parseEther } from "viem";
+import { formatUnits, parseEther, parseUnits } from "viem";
 import { useAccount } from "wagmi";
-import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { useScaffoldContract, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 const DepositForm: React.FC = () => {
   const { openConnectModal } = useConnectModal();
@@ -38,7 +38,41 @@ const DepositForm: React.FC = () => {
     watch: true,
   });
 
+  const { data: miniSwapContract } = useScaffoldContract({ contractName: "MiniSwap" });
+
+  // Load allowances for token approval
+  const { data: allowanceTHB, isLoading: allowanceTHBLoading } = useScaffoldReadContract({
+    contractName: "THB",
+    functionName: "allowance",
+    args: [address, miniSwapContract?.address],
+    watch: true,
+  });
+
+  const { data: allowanceTVER, isLoading: allowanceTVERLoading } = useScaffoldReadContract({
+    contractName: "TVER",
+    functionName: "allowance",
+    args: [address, miniSwapContract?.address],
+    watch: true,
+  });
+
   const { writeContractAsync: writeMiniSwapAsync } = useScaffoldWriteContract("MiniSwap");
+  const { writeContractAsync: writeTHBAsync } = useScaffoldWriteContract("THB");
+  const { writeContractAsync: writeTVERAsync } = useScaffoldWriteContract("TVER");
+
+  const approveHandler = async (token: string) => {
+    console.log(`Approve ${token}`);
+    if (token === "THB") {
+      await writeTHBAsync({
+        functionName: "approve",
+        args: [miniSwapContract?.address, parseEther(thbValue.toString())],
+      });
+    } else if (token === "TVER") {
+      await writeTVERAsync({
+        functionName: "approve",
+        args: [miniSwapContract?.address, parseEther(tverValue.toString())],
+      });
+    }
+  };
 
   const depositHandler = async () => {
     console.log("Deposit");
@@ -64,6 +98,38 @@ const DepositForm: React.FC = () => {
       return "Loading...";
     }
     return formatUnits(balanceTVER, decimalsTVER);
+  };
+
+  const handleButtonClick = () => {
+    if (allowanceTHBLoading || allowanceTVERLoading) {
+      return;
+    }
+    if (!isConnected) {
+      openConnectModal?.();
+    } else if (allowanceTHB && allowanceTHB < parseEther(thbValue)) {
+      approveHandler("THB");
+    } else if (allowanceTVER && allowanceTVER < parseEther(tverValue)) {
+      approveHandler("TVER");
+    } else {
+      depositHandler();
+    }
+  };
+
+  const getButtonLabel = () => {
+    console.log("allowanceTHB", allowanceTHB);
+    console.log("allowanceTVER", allowanceTVER);
+    if (allowanceTHBLoading || allowanceTVERLoading) {
+      return "Loading...";
+    }
+    if (!isConnected) {
+      return "Connect";
+    } else if (allowanceTHB && decimalsTHB && allowanceTHB < parseUnits(thbValue, decimalsTHB)) {
+      return "Approve THB";
+    } else if (allowanceTVER && decimalsTVER && allowanceTVER < parseUnits(tverValue, decimalsTVER)) {
+      return "Approve TVER";
+    } else {
+      return "Deposit";
+    }
   };
 
   return (
@@ -111,16 +177,10 @@ const DepositForm: React.FC = () => {
           />
         </div>
 
-        {/* Add tokens in balanced proportion */}
-        <div className="flex items-center mb-4">
-          {/*<input type="checkbox" className="toggle toggle-primary" />
-          <span className="ml-2 text-sm text-gray-500">Add tokens in balanced proportion</span>*/}
-        </div>
-
         {/* Deposit Button */}
         <div className="mt-6">
-          <button className="btn btn-primary w-full" onClick={isConnected ? depositHandler : openConnectModal}>
-            {isConnected ? "Deposit" : "Connect"}
+          <button className="btn btn-primary w-full" onClick={handleButtonClick}>
+            {getButtonLabel()}
           </button>
         </div>
       </div>
