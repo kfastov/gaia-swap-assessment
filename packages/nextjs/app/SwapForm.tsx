@@ -1,6 +1,14 @@
 import React from "react";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
+import { useAccount } from "wagmi";
 
 const SwapForm: React.FC = () => {
+  const swapHandler = () => {
+    console.log("Swap");
+  };
+
+  const { openConnectModal } = useConnectModal();
+  const { isConnected } = useAccount();
   return (
     <div className="w-96 mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
       <div className="p-6">
@@ -65,7 +73,9 @@ const SwapForm: React.FC = () => {
 
         {/* Connect/Approve/Swap Button */}
         <div className="mt-6">
-          <button className="btn btn-primary w-full">Connect</button>
+          <button className="btn btn-primary w-full" onClick={isConnected ? swapHandler : openConnectModal}>
+            {isConnected ? "Swap" : "Connect"}
+          </button>
         </div>
       </div>
     </div>
