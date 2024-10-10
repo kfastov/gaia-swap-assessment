@@ -11,6 +11,9 @@ type Token = {
 };
 
 const SwapForm: React.FC = () => {
+  const { openConnectModal } = useConnectModal();
+  const { address, isConnected } = useAccount();
+
   const [fromValue, setFromValue] = useState<number>(0.001);
   const [toValue, setToValue] = useState<number>(0);
 
@@ -22,21 +25,38 @@ const SwapForm: React.FC = () => {
 
   const { data: thbContract, isLoading: thbContractLoading } = useScaffoldContract({ contractName: "THB" });
   const { data: tverContract, isLoading: tverContractLoading } = useScaffoldContract({ contractName: "TVER" });
+  const { data: miniSwapContract } = useScaffoldContract({ contractName: "MiniSwap" });
 
   // Load reserves for price calculation
   const { data: reserve0, isLoading: reserve0Loading } = useScaffoldReadContract({
     contractName: "MiniSwap",
     functionName: "reserve0",
-    // watch: true,
+    watch: true,
   });
 
   const { data: reserve1, isLoading: reserve1Loading } = useScaffoldReadContract({
     contractName: "MiniSwap",
     functionName: "reserve1",
-    // watch: true,
+    watch: true,
   });
 
-  const { writeContractAsync } = useScaffoldWriteContract("MiniSwap");
+  // Load allowances for token approval
+  const { data: allowanceTHB, isLoading: allowanceTHBLoading } = useScaffoldReadContract({
+    contractName: "THB",
+    functionName: "allowance",
+    args: [address, miniSwapContract?.address],
+    watch: true,
+  });
+  const { data: allowanceTVER, isLoading: allowanceTVERLoading } = useScaffoldReadContract({
+    contractName: "TVER",
+    functionName: "allowance",
+    args: [address, miniSwapContract?.address],
+    watch: true,
+  });
+
+  const { writeContractAsync: writeMiniSwapAsync } = useScaffoldWriteContract("MiniSwap");
+  const { writeContractAsync: writeTHBAsync } = useScaffoldWriteContract("THB");
+  const { writeContractAsync: writeTVERAsync } = useScaffoldWriteContract("TVER");
 
   useEffect(() => {
     const newTokens = [];
@@ -56,14 +76,43 @@ const SwapForm: React.FC = () => {
     }
   }, [thbContractLoading, thbContract, tverContractLoading, tverContract]);
 
+  const swapSufficient = () => {
+    if (fromToken?.name === "THB") {
+      return allowanceTHB && allowanceTHB >= parseEther(fromValue.toString());
+    } else if (fromToken?.name === "TVER") {
+      return allowanceTVER && allowanceTVER >= parseEther(fromValue.toString());
+    }
+    return false;
+  };
+
+  const approveHandler = async () => {
+    console.log("Approve");
+    if (fromToken?.name === "THB") {
+      await writeTHBAsync({
+        functionName: "approve",
+        args: [miniSwapContract?.address, parseEther(fromValue.toString())],
+      });
+    } else if (fromToken?.name === "TVER") {
+      await writeTVERAsync({
+        functionName: "approve",
+        args: [miniSwapContract?.address, parseEther(fromValue.toString())],
+      });
+    }
+  };
+
   const swapHandler = async () => {
     console.log("Swap");
+    console.log("reserve0", reserve0);
+    console.log("reserve1", reserve1);
+    console.log("allowanceTHB", allowanceTHB);
+    console.log("allowanceTVER", allowanceTVER);
     if (!fromToken || !toToken) {
       console.error("No tokens selected");
       return;
     }
     try {
-      await writeContractAsync(
+      console.log(`Trying to swap ${parseEther(fromValue.toString())} ${fromToken.name} to ${toToken.name}`);
+      await writeMiniSwapAsync(
         {
           functionName: "swap",
           args: [parseEther(fromValue.toString()), fromToken.address],
@@ -78,9 +127,6 @@ const SwapForm: React.FC = () => {
       console.error(error);
     }
   };
-
-  const { openConnectModal } = useConnectModal();
-  const { isConnected } = useAccount();
 
   const calculateToValue = (fromValue: number, price: number) => {
     return fromValue * price;
@@ -179,15 +225,22 @@ const SwapForm: React.FC = () => {
 
         {/* Connect/Approve/Swap Button */}
         <div className="mt-6">
-          <button className="btn btn-primary w-full" onClick={isConnected ? swapHandler : openConnectModal}>
-            {isConnected ? "Swap" : "Connect"}
+          <button
+            className="btn btn-primary w-full"
+            onClick={isConnected ? (swapSufficient() ? swapHandler : approveHandler) : openConnectModal}
+          >
+            {isConnected ? (swapSufficient() ? "Swap" : "Approve") : "Connect"}
           </button>
         </div>
       </div>
       <div className="p-6">
         <div className="flex justify-between text-sm text-gray-500">
-          <span>Reserve 0: {reserve0Loading ? "Loading..." : reserve0}</span>
-          <span>Reserve 1: {reserve1Loading ? "Loading..." : reserve1}</span>
+          <span>Reserve 0: {reserve0Loading ? "Loading..." : reserve0?.toString()}</span>
+          <span>Reserve 1: {reserve1Loading ? "Loading..." : reserve1?.toString()}</span>
+        </div>
+        <div className="flex justify-between text-sm text-gray-500">
+          <span>Allowance THB: {allowanceTHBLoading ? "Loading..." : allowanceTHB?.toString()}</span>
+          <span>Allowance TVER: {allowanceTVERLoading ? "Loading..." : allowanceTVER?.toString()}</span>
         </div>
       </div>
     </div>
