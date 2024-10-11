@@ -1,21 +1,8 @@
-# 🏗 Scaffold-ETH 2
 
-<h4 align="center">
-  <a href="https://docs.scaffoldeth.io">Documentation</a> |
-  <a href="https://scaffoldeth.io">Website</a>
-</h4>
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
+# 🏗 MiniSwap for GaiaSwap Assignment
 
-⚙️ Built using NextJS, RainbowKit, Hardhat, Wagmi, Viem, and Typescript.
-
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
-- 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
-
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+⚙️ Built using [Scaffold-ETH 2](https://scaffoldeth.io).
 
 ## Requirements
 
@@ -32,8 +19,8 @@ To get started with Scaffold-ETH 2, follow the steps below:
 1. Clone this repo & install dependencies
 
 ```
-git clone https://github.com/scaffold-eth/scaffold-eth-2.git
-cd scaffold-eth-2
+git clone https://github.com/kfastov/gaia-swap-assessment.git
+cd gaia-swap-assessment
 yarn install
 ```
 
@@ -59,23 +46,43 @@ This command deploys a test smart contract to the local network. The contract is
 yarn start
 ```
 
-Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the `Debug Contracts` page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
+Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the http://localhost:3000/debug page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
 
-**What's next**:
+5. Launching the backend server:
 
-- Edit your smart contract `YourContract.sol` in `packages/hardhat/contracts`
-- Edit your frontend homepage at `packages/nextjs/app/page.tsx`. For guidance on [routing](https://nextjs.org/docs/app/building-your-application/routing/defining-routes) and configuring [pages/layouts](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts) checkout the Next.js documentation.
-- Edit your deployment scripts in `packages/hardhat/deploy`
-- Edit your smart contract test in: `packages/hardhat/test`. To run test use `yarn hardhat:test`
+There supposed to be a backend server, but time ran out and I had to focus on the frontend.
+The server draft can be started with `yarn backend:start`.
 
-## Documentation
+## Deployments
 
-Visit our [docs](https://docs.scaffoldeth.io) to learn how to start building with Scaffold-ETH 2.
+- [MiniSwap Contract](https://sepolia.etherscan.io/address/0x5f001c9fbd178cb156b9808368cef5f5864ef450)
+- [THB Contract](https://sepolia.etherscan.io/address/0xe7a4E7e369B0F9A26422e255140Fe27273e71521)
+- [TVER Contract](https://sepolia.etherscan.io/address/0xbd6fF8DfB02C1e807FAD9b2301e220F9e083a94f)
+- [MiniSwap Frontend](https://gaia-swap-assessment-nextjs.vercel.app/)
 
-To know more about its features, check out our [website](https://scaffoldeth.io).
+## Code Overview
 
-## Contributing to Scaffold-ETH 2
+- `packages/hardhat/contracts/` - the contracts for the application
+- `packages/nextjs/app/` - the frontend code (except of some preexisting code from Scaffold-Eth in `blockexplorer` and `debugger`)
 
-We welcome contributions to Scaffold-ETH 2!
+## Design Decisions and Conclusions
 
-Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.
+### Writing the custom contract in Solidity
+The best approach in the real world would be to fork the existing code from Uniswap and modify it according to the requirements. But since this is an assessment, I decided to write the contract from scratch. The result was not perfect and far from production ready, but it was a good exercise. The code contains some errors and lacks of some features that would be great to have in production:
+
+- No fee collection: it would be better to have a fee mechanism
+- No reentrancy protection
+- The formula for liquidity deposit is valid only for the initial deposit
+- The contract doesn't check that deposited tokens are balanced
+- events don't comply with Uniswap standard and don't contain necessary data such as the address of the sender
+and many other things
+
+### Using Scaffold-Eth as a framework
+Initially I thought that it's the best way to deploy several smart contracts in multiple chains and automatically update their addresses in the frontend. Also I chose it because of the limited time, because my experience with frontend development is limited and I wanted to focus on the task.
+
+### Using viem and wagmi for interacting with the blockchain
+I used viem and wagmi for interacting with the blockchain because of the ready-to-use hooks and the ability to connect to multiple chains, and also for type safety. But fetching multiple data from a single contract appeared to be a bit clumsy, so next time I would probably research on best practices or stick to ethers.js.
+
+### Overall impression
+I realize that I rather failed this task than succeeded, but it was really my first time of creating a full-stack Web3 application from scratch. One of my mistakes was that I spent too much time choosing the technologies instead of just starting to code. I know that next time I will do it better.
+
