@@ -1,6 +1,7 @@
 import express from 'express';
 import { ethers } from 'ethers';
 import fs from 'fs';
+import Event from '../models/Event.js';
 const app = express();
 const port = process.env.PORT || 3001;
 
@@ -49,6 +50,11 @@ console.log(latestBlock);
 
 app.get('/', (req, res) => {
   res.send('Hello from Express!');
+});
+
+app.get('/events', async (req, res) => {
+  const events = await Event.findAll();
+  res.json(events);
 });
 
 app.listen(port, () => {
