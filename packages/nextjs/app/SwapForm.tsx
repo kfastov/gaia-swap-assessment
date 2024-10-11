@@ -41,13 +41,13 @@ const SwapForm: React.FC = () => {
   });
 
   // Load allowances for token approval
-  const { data: allowanceTHB, isLoading: allowanceTHBLoading } = useScaffoldReadContract({
+  const { data: allowanceTHB } = useScaffoldReadContract({
     contractName: "THB",
     functionName: "allowance",
     args: [address, miniSwapContract?.address],
     watch: true,
   });
-  const { data: allowanceTVER, isLoading: allowanceTVERLoading } = useScaffoldReadContract({
+  const { data: allowanceTVER } = useScaffoldReadContract({
     contractName: "TVER",
     functionName: "allowance",
     args: [address, miniSwapContract?.address],
@@ -201,14 +201,16 @@ const SwapForm: React.FC = () => {
             <span>Balance 0.00</span>
           </div>
         </div>
+        {/*
         <div className="flex justify-between mb-4">
           <button className="btn btn-outline btn-sm text-black">25%</button>
           <button className="btn btn-outline btn-sm text-black">50%</button>
           <button className="btn btn-outline btn-sm text-black">75%</button>
           <button className="btn btn-outline btn-sm text-black">100%</button>
         </div>
+        */}
 
-        {/* Swap Icon */}
+        {/* Swap Icon 
         <div className="flex justify-center mb-4">
           <button className="btn btn-circle btn-outline">
             <svg
@@ -222,6 +224,7 @@ const SwapForm: React.FC = () => {
             </svg>
           </button>
         </div>
+        */}
 
         {/* To Token Section */}
         <div className="mb-4">
@@ -261,18 +264,6 @@ const SwapForm: React.FC = () => {
           >
             {isConnected ? (swapSufficient() ? "Swap" : "Approve") : "Connect"}
           </button>
-        </div>
-      </div>
-      <div className="p-6">
-        <div className="flex justify-between text-sm text-gray-500">
-          <span className="mr-4">
-            Reserve 0: {reserve0Loading ? "Loading..." : formatUnits(reserve0 ?? 0n, thbDecimals ?? 0)}
-          </span>
-          <span>Reserve 1: {reserve1Loading ? "Loading..." : formatUnits(reserve1 ?? 0n, tverDecimals ?? 0)}</span>
-        </div>
-        <div className="flex justify-between text-sm text-gray-500">
-          <span>Allowance THB: {allowanceTHBLoading ? "Loading..." : allowanceTHB?.toString()}</span>
-          <span>Allowance TVER: {allowanceTVERLoading ? "Loading..." : allowanceTVER?.toString()}</span>
         </div>
       </div>
     </div>
