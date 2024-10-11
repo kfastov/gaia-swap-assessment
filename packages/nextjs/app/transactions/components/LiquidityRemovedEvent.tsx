@@ -3,22 +3,30 @@ import { formatUnits } from "viem";
 
 interface LiquidityRemovedEventProps {
   event: any;
+  blockNumber: bigint;
+  token0Name: string;
+  token1Name: string;
 }
 
-const LiquidityRemovedEvent: React.FC<LiquidityRemovedEventProps> = ({ event }) => {
+const LiquidityRemovedEvent: React.FC<LiquidityRemovedEventProps> = ({
+  event,
+  blockNumber,
+  token0Name,
+  token1Name,
+}) => {
   return (
-    <li className="mb-2">
-      <div className="text-black">
+    <li className="mb-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg shadow-lg">
+      <div className="text-blue-700 font-bold mb-2">
         <strong>Liquidity Removed:</strong>
       </div>
       <div className="text-black">
-        <strong>Amount0:</strong> {formatUnits(event.args.amount0, 18)}
+        <strong>{token0Name}:</strong> {formatUnits(event.args.amount0, 18)}
       </div>
       <div className="text-black">
-        <strong>Amount1:</strong> {formatUnits(event.args.amount1, 18)}
+        <strong>{token1Name}:</strong> {formatUnits(event.args.amount1, 18)}
       </div>
       <div className="text-black">
-        <strong>Block Number:</strong> {event.blockNumber}
+        <strong>Block Number:</strong> {blockNumber.toString()}
       </div>
     </li>
   );
