@@ -43,6 +43,7 @@ const Transactions: React.FC = () => {
     };
 
     fetchTransactions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [miniSwapContract?.address, address]);
 
   return (

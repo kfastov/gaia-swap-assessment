@@ -86,6 +86,7 @@ const SwapForm: React.FC = () => {
       setFromToken(newTokens[0] || null);
       setToToken(newTokens[1] || null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [thbContractLoading, thbContract, tverContractLoading, tverContract]);
 
   const swapSufficient = () => {
